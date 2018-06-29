@@ -1,7 +1,11 @@
-#Hakchi version added to ease confusion amongst Hakchi community due to messy past...
+# Hakchi version added to ease confusion amongst Hakchi community due to messy past...
+#
+# Make sure you have readelf installed (sudo apt-get install readelf) to patch the binary
+# Might not be needed for your build but it's a useful tool and for safety it should be
+# run anyway to ensure the SDL2 link isn't broken...
 
 HAKCHI_DIR := hakchi
-HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b #Official Hakchi public release version
+HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b
 TARGET := retroarch
 
 all: $(TARGET)
@@ -10,16 +14,16 @@ retroarch:
         mkdir -p $(HAKCHI_DIR)/bin $(HAKCHI_DIR)/var
         ./configure --host=arm-linux-gnueabihf --disable-freetype --enable-opengles --enable-udev --enable-alsa --enable-neon --enable-floathard
         make -f Makefile -j
-        patchelf --replace-needed libSDL2-2.0.so.0 libSDL2.so #libSDL2-2.0.so.0 sym link doesn't exist on native build. Just patch the binary...
-        rm -f $(HAKCHI_DIR)/bin/retroarch 
+        patchelf --replace-needed libSDL2-2.0.so.0 libSDL2.so retroarch #libSDL2-2.0.so.0 sym link doesn't exist on native build. Just patch the binary...
+        rm -f $(HAKCHI_DIR)/bin/retroarch
         cp retroarch $(HAKCHI_DIR)/bin/retroarch
         echo $(echo "Built by: " $USER @ $(date) \\\\\\ Git Commit: && git rev-parse --short HEAD | sed 's/.\{3\}$//') > $(HAKCHI_DIR)/var/retroarch_version
         @echo "** BUILDING HAKCHI $(HAKCHI_VER) HMOD PACKAGE **"
-        mkdir -p hakchi/etc/libretro/core/ hakchi/etc/libretro/info/ hakchi/etc/preinit.d/
-        cd hakchi/; tar -czvf "$(HAKCHI_VER).hmod" *
-        
+        cd $(HAKCHI_DIR)/; tar -czvf "$(HAKCHI_VER).hmod" *
+        mv $(HAKCHI_DIR)/$(HAKCHI_VER).hmod ../
+        @echo "** BUILT HAKCHI $(HAKCHI_VER) HMOD PACKAGE **"
 clean:
-        rm -f *.o 
+        rm -f *.o
         rm -f audio/*.o
         rm -f conf/*.o
         rm -f gfx/*.o
