@@ -1,0 +1,34 @@
+HAKCHI_DIR := hakchi
+HAKCHI_BIN := $(HAKCHI_DIR)/$(HAKCHI_BIN)
+HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b
+TARGET := retroarch
+
+all: $(TARGET)
+
+retroarch:
+	mkdir -p $(HAKCHI_BIN)
+	./configure --host=arm-linux-gnueabihf --disable-freetype --enable-opengles --enable-udev --enable-alsa --enable-neon --enable-floathard
+	make -f Makefile -j
+
+$(HAKCHI_BIN)/retroarch: retroarch
+	cp retroarch $(HAKCHI_BIN)/retroarch
+
+clean:
+	rm -f *.o 
+	rm -f audio/*.o
+	rm -f conf/*.o
+	rm -f gfx/*.o
+	rm -f gfx/drivers_font/*.o
+	rm -f gfx/drivers_font_renderer/*.o
+	rm -f gfx/drivers_context/*.o
+	rm -f gfx/py_state/*.o
+	rm -f compat/*.o
+	rm -f record/*.o
+	rm -f input/*.o
+	rm -f tools/*.o
+	rm -f $(BINDIR)/retroarch
+	rm -f $(BINDIR)/retroarch-joyconfig
+	rm -f $(PNDDIR)/readme.html
+	rm -f retroarch
+	rm -f $(HAKCHI_BIN)/retroarch
+	rm -f $(HAKCHI_DIR)/$(HAKCHI_VER).hmod
