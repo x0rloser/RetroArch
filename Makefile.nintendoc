@@ -1,34 +1,40 @@
+#Hakchi version added to ease confusion amongst Hakchi community due to messy past...
+
 HAKCHI_DIR := hakchi
-HAKCHI_BIN := $(HAKCHI_DIR)/$(HAKCHI_BIN)
-HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b
+HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b #Official Hakchi public release version
 TARGET := retroarch
 
 all: $(TARGET)
 
 retroarch:
-	mkdir -p $(HAKCHI_BIN)
-	./configure --host=arm-linux-gnueabihf --disable-freetype --enable-opengles --enable-udev --enable-alsa --enable-neon --enable-floathard
-	make -f Makefile -j
-
-$(HAKCHI_BIN)/retroarch: retroarch
-	cp retroarch $(HAKCHI_BIN)/retroarch
-
+        mkdir -p $(HAKCHI_DIR)/bin $(HAKCHI_DIR)/var
+        ./configure --host=arm-linux-gnueabihf --disable-freetype --enable-opengles --enable-udev --enable-alsa --enable-neon --enable-floathard
+        make -f Makefile -j
+        patchelf --replace-needed libSDL2-2.0.so.0 libSDL2.so #libSDL2-2.0.so.0 sym link doesn't exist on native build. Just patch the binary...
+        rm -f $(HAKCHI_DIR)/bin/retroarch 
+        cp retroarch $(HAKCHI_DIR)/bin/retroarch
+        echo $(echo "Built by: " $USER @ $(date) \\\\\\ Git Commit: && git rev-parse --short HEAD | sed 's/.\{3\}$//') > $(HAKCHI_DIR)/var/retroarch_version
+        @echo "** BUILDING HAKCHI $(HAKCHI_VER) HMOD PACKAGE **"
+        mkdir -p hakchi/etc/libretro/core/ hakchi/etc/libretro/info/ hakchi/etc/preinit.d/
+        cd hakchi/; tar -czvf "$(HAKCHI_VER).hmod" *
+        
 clean:
-	rm -f *.o 
-	rm -f audio/*.o
-	rm -f conf/*.o
-	rm -f gfx/*.o
-	rm -f gfx/drivers_font/*.o
-	rm -f gfx/drivers_font_renderer/*.o
-	rm -f gfx/drivers_context/*.o
-	rm -f gfx/py_state/*.o
-	rm -f compat/*.o
-	rm -f record/*.o
-	rm -f input/*.o
-	rm -f tools/*.o
-	rm -f $(BINDIR)/retroarch
-	rm -f $(BINDIR)/retroarch-joyconfig
-	rm -f $(PNDDIR)/readme.html
-	rm -f retroarch
-	rm -f $(HAKCHI_BIN)/retroarch
-	rm -f $(HAKCHI_DIR)/$(HAKCHI_VER).hmod
+        rm -f *.o 
+        rm -f audio/*.o
+        rm -f conf/*.o
+        rm -f gfx/*.o
+        rm -f gfx/drivers_font/*.o
+        rm -f gfx/drivers_font_renderer/*.o
+        rm -f gfx/drivers_context/*.o
+        rm -f gfx/py_state/*.o
+        rm -f compat/*.o
+        rm -f record/*.o
+        rm -f input/*.o
+        rm -f tools/*.o
+        rm -f $(BINDIR)/retroarch
+        rm -f $(BINDIR)/retroarch-joyconfig
+        rm -f $(PNDDIR)/readme.html
+        rm -f retroarch
+        rm -f $(HAKCHI_DIR)/bin/retroarch
+        rm -f $(HAKCHI_DIR)/$(HAKCHI_VER).hmod
+        rm -f $(HAKCHI_DIR)/var/retroarch_version
