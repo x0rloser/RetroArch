@@ -22,7 +22,10 @@ clovercon_file=/dev/clovercon1
 logend="_RetroArch.log"
 shift 2
 
-if ! echo $corename | grep "prboom\|tyrquake"; then
+#Overcommit this bitch. (Should solve dumb crashes due to memory limits)
+echo "1" > "/proc/sys/vm/overcommit_memory"
+
+if ! echo $corename | grep "prboom\|tyrquake\|cannonball"; then
   umount "$rootfs/share/retroarch/assets/RAloading-min.png"
 fi
 
@@ -60,12 +63,12 @@ if [ ! -z "$custom_loadscreen" ]; then
   decodepng "$rootfs/share/retroarch/assets/$custom_loadscreen" > /dev/fb0;
 else
   if [ -f "$mountpoint/media/hakchi/RA_loading_screens/"$noprefix".png" ] && [ -f "$rootfs/share/retroarch/assets/RAloading-min.png" ]; then
-	  decodepng "$mountpoint/media/hakchi/RA_loading_screens/"$noprefix".png"  > /dev/fb0;
+          decodepng "$mountpoint/media/hakchi/RA_loading_screens/"$noprefix".png"  > /dev/fb0;
   else
     if [ -f "$rootfs/share/retroarch/assets/core_loading_screens/"$noprefix".png" ] && [ -f "$rootfs/share/retroarch/assets/RAloading-min.png" ]; then
-	  decodepng "$rootfs/share/retroarch/assets/core_loading_screens/"$noprefix".png"  > /dev/fb0;
+          decodepng "$rootfs/share/retroarch/assets/core_loading_screens/"$noprefix".png"  > /dev/fb0;
     else
-	  decodepng "$rootfs/share/retroarch/assets/RAloading-min.png" > /dev/fb0;
+          decodepng "$rootfs/share/retroarch/assets/RAloading-min.png" > /dev/fb0;
     fi
   fi
 fi
@@ -100,8 +103,15 @@ if [ ! -z "$load" ] && [ -f "$load" ] && [ -z "$nosaves" ]; then
     cp -f "$load" "$autosave"
   fi
 fi
-# Nestopia names FDS saves as $id.sav, so here's a quick fix
+
+# Nestopia names FDS saves as $id.sav, so here's a quick fix, gpSP also uses .sav extension. Genesis Plus GX uses .brm for Sega CD games.
+brm="/var/lib/clover/profiles/0/$title_code/$id.brm"
+rbrm="/var/cache/retroarch/$id.brm"
 if [ "$corename" == "nestopia" ] && [ "$extension" == "fds" ]; then
+  [ ! -z "$sram" ] && [ -f "$sram" ] && cp -f "$sram" "$rsav"
+elif [ "$noprefix" == "genesis_plus_gx" ] && [ -f "$brm" ]; then
+  cp -f "$brm" "$rbrm"
+elif [ "$noprefix" == "gpsp" ]; then
   [ ! -z "$sram" ] && [ -f "$sram" ] && cp -f "$sram" "$rsav"
 else
   [ ! -z "$sram" ] && [ -f "$sram" ] && cp -f "$sram" "$rsram"
@@ -122,7 +132,7 @@ if [ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" == "0008" ]; then
     sed -i 's/^bezel_mode=0/bezel_mode=1/' /bin/retroarch-clover-child && bezel_mode=1
   else
     sed -i 's/^bezel_mode=1/bezel_mode=0/' /bin/retroarch-clover-child && bezel_mode=0
-	grep "^Exec=" /usr/share/games/$title_code/$title_code.desktop | grep bezel-mode && bezel_mode=1
+        grep "^Exec=" /usr/share/games/$title_code/$title_code.desktop | grep bezel-mode && bezel_mode=1
   fi
 fi
 
@@ -167,19 +177,34 @@ sync
 echo 3 > /proc/sys/vm/drop_caches
 
 if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
-  rm -f /media/Development_RetroArch.log
-  echo "Pre RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
-  retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /media/Development_RetroArch.log 2>&1 &
+  if [ -z "${corename// }" ]; then
+    rm -f /media/Development_RetroArch.log
+    echo "Pre RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
+    echo "RUNNING STANDALONE DEV" > /media/test123.log
+    retroarch -c "$HOME/retroarch.cfg" -vf > /media/Development_RetroArch.log 2>&1 &
+  else
+    rm -f /media/Development_RetroArch.log
+    echo "RUNNING dev mode" > /media/test234.log
+    echo "Pre RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
+    retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /media/Development_RetroArch.log 2>&1 &
+  fi
 else
+  if [ -z "${corename// }" ]; then
+    echo "RUNNING STANDALONE STANDARD" > /media/test123.log
+    retroarch -c "$HOME/retroarch.cfg" -vf &
+  fi
   if [ "$debug" == "0" ]; then #Default
+    echo "RUNNING default mode" > /media/test234.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra &
-  fi 
+  fi
   if [ "$debug" == "1" ]; then #Verbose USB mode
+    echo "RUNNING default mode" > /media/test234.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /media/"$filename"_RetroArch.log 2>&1 &
-  fi 
+  fi
   if [ "$debug" == "2" ]; then #Verbose NAND mode
+    echo "RUNNING default mode" > /media/test234.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /tmp/"$filename"_RetroArch.log 2>&1 &
-  fi 
+  fi
 fi
 
 rpid=$!
@@ -210,6 +235,10 @@ retroarch_watchdog $watchdog_args
 [ ! -z "$save" ] && [ -f "$autosave" ] && [ -z "$nosaves" ] && gzip -f "$autosave" && mv -f "$autosave.gz" "$save"
 if [ "$corename" == "nestopia" ] && [ "$extension" == "fds" ]; then
   [ ! -z "$sram" ] && [ -f "$rsav" ] && mv -f "$rsav" "$sram"
+elif [ "$noprefix" == "genesis_plus_gx" ] && [ -f "$rbrm" ]; then
+  mv -f "$rbrm" "$brm"
+elif [ "$noprefix" == "gpsp" ]; then
+  [ ! -z "$sram" ] && [ -f "$rsav" ] && mv -f "$rsav" "$sram"
 else
   [ ! -z "$sram" ] && [ -f "$rsram" ] && mv -f "$rsram" "$sram"
 fi
@@ -232,9 +261,9 @@ if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   echo "Post RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
 fi
 
-# Clear Caches/Buffers
-sync
-echo 3 > /proc/sys/vm/drop_caches
+# Clear Caches/Buffers (MadMonkey will be relieved we removed this...)
+#sync
+#echo 3 > /proc/sys/vm/drop_caches
 
 # Back to the shell
 /etc/init.d/S81clover-mcp start
