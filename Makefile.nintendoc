@@ -16,6 +16,7 @@ retroarch:
 	./configure --host=arm-linux-gnueabihf --disable-freetype --enable-opengles --enable-udev --enable-alsa --enable-neon --enable-floathard
 	make -f Makefile -j
 	patchelf --replace-needed libSDL2-2.0.so.0 libSDL2.so retroarch #libSDL2-2.0.so.0 sym link doesn't exist on native build. Just patch the binary...
+	/usr/arm-linux-gnueabihf/bin/strip retroarch
 	rm -f $(HAKCHI_DIR)/bin/retroarch
 	cp retroarch $(HAKCHI_DIR)/bin/retroarch
 	echo $$(echo "Built by: " $$USER @ $$(date) \\\\\\ Git Commit: $(GIT_COMMIT)) > $(HAKCHI_DIR)/etc/libretro/retroarch_version
