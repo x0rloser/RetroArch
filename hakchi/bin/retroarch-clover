@@ -1,11 +1,9 @@
 #!/bin/sh
 
-# Kill it! Kill it with fire!
-
 source /etc/preinit
 script_init
 
-pkill -KILL clover-mcp
+pkill -KILL clover-mcp # Kill it! Kill it with fire!
 
 core="$1"
 rom="$2"

@@ -3,12 +3,6 @@
 source /etc/preinit
 script_init
 
-pkill -KILL clover-mcp
-
-export HOME=/etc/libretro
-
-decodepng "$rootfs/share/retroarch/assets/RAloading-min.png" > /dev/fb0;
-
-mkdir -p /var/cache/retroarch/
+pkill -KILL clover-mcp # Kill it! Kill it with fire!
 
 exec retroarch-clover-child

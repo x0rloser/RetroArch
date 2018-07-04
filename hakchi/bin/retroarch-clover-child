@@ -3,6 +3,8 @@
 source /etc/preinit
 script_init
 
+#### Variable Definitions ##################################################
+
 HOME=/etc/libretro
 corename=$1
 noprefix=${corename#km_}
@@ -15,19 +17,10 @@ autosave="/var/cache/retroarch/$id.state.auto"
 rsram="/var/cache/retroarch/$id.srm"
 rsav="/var/cache/retroarch/$id.sav"
 t_suffix=_time.txt
-demo_time=30
 debug=0
 bezel_mode=0
 clovercon_file=/dev/clovercon1
-logend="_RetroArch.log"
 shift 2
-
-#Overcommit this bitch. (Should solve dumb crashes due to memory limits)
-echo "1" > "/proc/sys/vm/overcommit_memory"
-
-if ! echo $corename | grep "prboom\|tyrquake\|cannonball"; then
-  umount "$rootfs/share/retroarch/assets/RAloading-min.png"
-fi
 
 while [ $# -gt 0 ]; do
   [ "$1" == "--load-state-file" ] && load=$2
@@ -58,23 +51,29 @@ while [ $# -gt 0 ]; do
   shift
 done
 
+#### Visuals ###############################################################
+
+#Retrospective fix for hakchi port splashes
+if ! echo $corename | grep "prboom\|tyrquake\|cannonball"; then
+  umount "$rootfs/share/retroarch/assets/RAloading-min.png"
+fi
+
 # Display Splash Screen
 if [ ! -z "$custom_loadscreen" ]; then
   decodepng "$rootfs/share/retroarch/assets/$custom_loadscreen" > /dev/fb0;
 else
   if [ -f "$mountpoint/media/hakchi/RA_loading_screens/"$noprefix".png" ] && [ -f "$rootfs/share/retroarch/assets/RAloading-min.png" ]; then
-          decodepng "$mountpoint/media/hakchi/RA_loading_screens/"$noprefix".png"  > /dev/fb0;
+    decodepng "$mountpoint/media/hakchi/RA_loading_screens/"$noprefix".png"  > /dev/fb0;
   else
     if [ -f "$rootfs/share/retroarch/assets/core_loading_screens/"$noprefix".png" ] && [ -f "$rootfs/share/retroarch/assets/RAloading-min.png" ]; then
-          decodepng "$rootfs/share/retroarch/assets/core_loading_screens/"$noprefix".png"  > /dev/fb0;
+      decodepng "$rootfs/share/retroarch/assets/core_loading_screens/"$noprefix".png"  > /dev/fb0;
     else
-          decodepng "$rootfs/share/retroarch/assets/RAloading-min.png" > /dev/fb0;
+      decodepng "$rootfs/share/retroarch/assets/RAloading-min.png" > /dev/fb0;
     fi
   fi
 fi
 
-[ -z "$timefile_save" ] && timefile_save=$load$t_suffix
-[ -z "$timefile_load" ] && timefile_load=$load$t_suffix
+#### Saves and Configs #####################################################
 
 [ ! -z "$demo" ] && load=$(dirname $load)/savestate
 
@@ -117,6 +116,14 @@ else
   [ ! -z "$sram" ] && [ -f "$sram" ] && cp -f "$sram" "$rsram"
 fi
 
+#### General ###############################################################
+
+#Overcommit this bitch. (Should solve dumb crashes due to memory limits)
+echo "1" > "/proc/sys/vm/overcommit_memory"
+
+[ -z "$timefile_save" ] && timefile_save=$load$t_suffix
+[ -z "$timefile_load" ] && timefile_load=$load$t_suffix
+
 # Hold L button while starting a game to toggle bezel-mode for this game
 if [ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" == "0004" ]; then
   if [ "$bezel_mode" == "0" ]; then
@@ -125,6 +132,7 @@ if [ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" == "0004" ]; then
     sed -i 's/ --bezel-mode//g' /usr/share/games/$title_code/$title_code.desktop && bezel_mode=0
   fi
 fi
+
 # Hold R button while starting a game to toggle global bezel-mode (games with --bezel-mode will still run in bezel-mode)
 if [ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" == "0008" ]; then
   grep "^bezel_mode=" /bin/retroarch-clover-child | grep "0" && global_bezel=0 || global_bezel=1
@@ -146,18 +154,6 @@ fi
 retroarch_watchdog --configEdit /etc/libretro/.config/retroarch/overlay/default.cfg overlay0_overlay "$overlay1" overlay0_desc0_overlay "$overlay2"
 retroarch_watchdog --configEdit /etc/libretro/.config/retroarch/overlay/default_scanlines.cfg overlay0_desc0_overlay "$frame.png"
 
-ra_config_args=""
-# Functions to make the rest easier
-smooth () { ra_config_args="$ra_config_args video_smooth $1"; }
-overlay () { ra_config_args="$ra_config_args input_overlay_enable $1"; }
-overlay_file () { ra_config_args="$ra_config_args input_overlay ~/.config/retroarch/overlay/$1"; }
-int_scale () { ra_config_args="$ra_config_args video_scale_integer $1"; }
-ratio () { ra_config_args="$ra_config_args aspect_ratio_index $1"; }
-width () { ra_config_args="$ra_config_args custom_viewport_width $1"; }
-height () { ra_config_args="$ra_config_args custom_viewport_height $1"; }
-posx () { ra_config_args="$ra_config_args custom_viewport_x $1"; }
-posy () { ra_config_args="$ra_config_args custom_viewport_y $1"; }
-
 # Smooth and bezel-mode
 if [ "$bezel_mode" == "1" ]; then
   [ "$filter" == "crt720" ] && width 877 && posx 201
@@ -170,42 +166,48 @@ fi
 [ "$filter" == "crt720" ] && [ ! -z "$no_smooth" ] && smooth false
 [ "$filter" == "gpu720" ] && [ ! -z "$smooth43" ] && smooth true
 
+ra_config_args=""
+# Functions to make the rest easier
+smooth () { ra_config_args="$ra_config_args video_smooth $1"; }
+overlay () { ra_config_args="$ra_config_args input_overlay_enable $1"; }
+overlay_file () { ra_config_args="$ra_config_args input_overlay ~/.config/retroarch/overlay/$1"; }
+int_scale () { ra_config_args="$ra_config_args video_scale_integer $1"; }
+ratio () { ra_config_args="$ra_config_args aspect_ratio_index $1"; }
+width () { ra_config_args="$ra_config_args custom_viewport_width $1"; }
+height () { ra_config_args="$ra_config_args custom_viewport_height $1"; }
+posx () { ra_config_args="$ra_config_args custom_viewport_x $1"; }
+posy () { ra_config_args="$ra_config_args custom_viewport_y $1"; }
+
 [ ! -z "$ra_config_args" ] && retroarch_watchdog --configEdit /etc/libretro/retroarch.cfg $ra_config_args
 
-# Clear Caches/Buffers
-sync
-echo 3 > /proc/sys/vm/drop_caches
+#### Runtime ###############################################################
 
 if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   if [ -z "${corename// }" ]; then
     rm -f /media/Development_RetroArch.log
     echo "Pre RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
-    echo "RUNNING STANDALONE DEV" > /media/test123.log
     retroarch -c "$HOME/retroarch.cfg" -vf > /media/Development_RetroArch.log 2>&1 &
   else
     rm -f /media/Development_RetroArch.log
-    echo "RUNNING dev mode" > /media/test234.log
     echo "Pre RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /media/Development_RetroArch.log 2>&1 &
   fi
 else
   if [ -z "${corename// }" ]; then
-    echo "RUNNING STANDALONE STANDARD" > /media/test123.log
     retroarch -c "$HOME/retroarch.cfg" -vf &
   fi
   if [ "$debug" == "0" ]; then #Default
-    echo "RUNNING default mode" > /media/test234.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra &
   fi
   if [ "$debug" == "1" ]; then #Verbose USB mode
-    echo "RUNNING default mode" > /media/test234.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /media/"$filename"_RetroArch.log 2>&1 &
   fi
   if [ "$debug" == "2" ]; then #Verbose NAND mode
-    echo "RUNNING default mode" > /media/test234.log
     retroarch -c "$HOME/retroarch.cfg" -vfL "$core" "$rom" $extra > /tmp/"$filename"_RetroArch.log 2>&1 &
   fi
 fi
+
+#### Cleanup ###############################################################
 
 rpid=$!
 
@@ -260,10 +262,6 @@ rm -rf /var/cache/retroarch/
 if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   echo "Post RA load Core Temp: " $(more /sys/devices/virtual/thermal/thermal_zone0/temp) >> /media/Development_RA_temp.log
 fi
-
-# Clear Caches/Buffers (MadMonkey will be relieved we removed this...)
-#sync
-#echo 3 > /proc/sys/vm/drop_caches
 
 # Back to the shell
 /etc/init.d/S81clover-mcp start
