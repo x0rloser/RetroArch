@@ -207,7 +207,7 @@ else
   fi
 fi
 
-#### Cleanup ###############################################################
+#### Watchdog ##############################################################
 
 rpid=$!
 
@@ -232,6 +232,8 @@ fi
 
 # Run retroarch watchdog
 retroarch_watchdog $watchdog_args
+
+#### Cleanup ###############################################################
 
 # Saves!
 [ ! -z "$save" ] && [ -f "$autosave" ] && [ -z "$nosaves" ] && gzip -f "$autosave" && mv -f "$autosave.gz" "$save"
