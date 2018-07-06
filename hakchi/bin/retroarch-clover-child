@@ -124,7 +124,7 @@ if [ -z "$(ls -A "$newrsram")" ]; then # so this whole part only executes at the
 fi
 
 # Copy savestates from USB if any
-if [ -d "/media/hakchi/ra savestates" ] && ls "/media/data/ra_savestates/$title_code/$id.state"*; then
+if [ -d "/media/data/ra_savestates" ] && ls "/media/data/ra_savestates/$title_code/$id.state"*; then
   cp "/media/data/ra_savestates/$title_code/$id.state"* /var/cache/retroarch
 fi
 
