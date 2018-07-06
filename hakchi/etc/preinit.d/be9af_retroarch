@@ -1,5 +1,6 @@
 Hakchi_Libretro_Initialise(){
 
+  local externalPath="$mountpoint/media/hakchi/libretro"
   local externalPath_db="$mountpoint/media/hakchi/libretro/database"
   local externalPath_thumbnails="$mountpoint/media/hakchi/libretro/thumbnails"
   local externalPath_playlists="$mountpoint/media/hakchi/libretro/playlists"
@@ -16,25 +17,25 @@ Hakchi_Libretro_Initialise(){
 
   if [ ! -d "$externalPath_db" ]; then
     mkdir -p "$externalPath_db" || return 4
-    copy "$localPath/database" "$externalPath_db" || return 5
+    copy "$localPath/database" "$externalPath" || return 5
     rm -rf "$localPath/database" && mkdir "$localPath/database"
   fi
   
   if [ ! -d "$externalPath_thumbnails" ]; then
     mkdir -p "$externalPath_thumbnails" || return 6
-    copy "$localPath/thumbnails" "$externalPath_thumbnails" || return 7
+    copy "$localPath/thumbnails" "$externalPath" || return 7
     rm -rf "$localPath/thumbnails" && mkdir "$localPath/thumbnails"
   fi
   
   if [ ! -d "$externalPath_playlists" ]; then
     mkdir -p "$externalPath_playlists" || return 8
-    copy "$localPath/playlists" "$externalPath_playlists" || return 9
+    copy "$localPath/playlists" "$externalPath" || return 9
     rm -rf "$localPath/playlists" && mkdir "$localPath/playlists"
   fi
   
   if [ ! -d "$externalPath_downloads" ]; then
     mkdir -p "$externalPath_downloads" || return 10
-    copy "$localPath/downloads" "$externalPath_downloads" || return 11
+    copy "$localPath/downloads" "$externalPath" || return 11
     rm -rf "$localPath/downloads" && mkdir "$localPath/downloads"
   fi
 
