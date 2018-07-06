@@ -39,8 +39,8 @@ Hakchi_Libretro_Initialise(){
     rm -rf "$localPath/downloads" && mkdir "$localPath/downloads"
   fi
 
-  [ "$1" == "1" ] && (mount_bind "$externalPath_db" "$localPath" || return 12)
-  [ "$1" == "1" ] && (mount_bind "$externalPath_thumbnails" "$localPath" || return 13)
-  [ "$1" == "1" ] && (mount_bind "$externalPath_playlists" "$localPath" || return 14)
-  [ "$1" == "1" ] && (mount_bind "$externalPath_downloads" "$localPath" || return 15)
+  [ "$1" == "1" ] && (mount_bind "$externalPath_db" "$localPath/database" || return 12)
+  [ "$1" == "1" ] && (mount_bind "$externalPath_thumbnails" "$localPath/thumbnails" || return 13)
+  [ "$1" == "1" ] && (mount_bind "$externalPath_playlists" "$localPath/playlists" || return 14)
+  [ "$1" == "1" ] && (mount_bind "$externalPath_downloads" "$localPath/downloads" || return 15)
 }
