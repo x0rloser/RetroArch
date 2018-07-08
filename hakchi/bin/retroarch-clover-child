@@ -222,7 +222,7 @@ fi
 
 #### Runtime ###############################################################
 
-if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
+if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   if [ -z "${corename// }" ]; then
     rm -f /media/Development_RetroArch.log
     echo "Pre RA load Core Temp: $(more /sys/devices/virtual/thermal/thermal_zone0/temp)" >> /media/Development_RA_temp.log
@@ -288,7 +288,7 @@ if [ -d "/media/hakchi" ] && ls "/var/cache/retroarch/$id".*[^auto]; then
 fi
 rm -rf /var/cache/retroarch/
 
-if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
+if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   echo "Post RA load Core Temp: $(more /sys/devices/virtual/thermal/thermal_zone0/temp)" >> /media/Development_RA_temp.log
 fi
 
