@@ -293,4 +293,4 @@ if [ -f "/media/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
 fi
 
 # Back to the shell
-/etc/init.d/S81clover-mcp start
+uistart #Not really needed but just incase.

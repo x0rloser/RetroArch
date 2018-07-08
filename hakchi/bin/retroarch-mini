@@ -3,6 +3,11 @@
 source /etc/preinit
 script_init
 
-pkill -KILL clover-mcp # Kill it! Kill it with fire!
+uistop # Kill it! Kill it with fire!
 
 exec retroarch-clover-child
+if [ -f "/bin/remote-exec" ]; then
+  echo retroarch-clover-child > /var/exec.flag
+else
+  exec retroarch-clover-child
+fi
