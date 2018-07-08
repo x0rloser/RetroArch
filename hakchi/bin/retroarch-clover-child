@@ -72,6 +72,14 @@ else
   fi
 fi
 
+#### Network Mounting ######################################################
+
+if [ -f "/media/hakchi/retroarch-mounted.cfg" ]; then
+  mv -f /media/hakchi/retroarch-mounted.cfg /etc/libretro/
+fi
+
+source /etc/libretro/retroarch-mounted.cfg
+
 #### Saves and Configs #####################################################
 
 [ ! -z "$demo" ] && load="$(dirname "$load")/savestate"
