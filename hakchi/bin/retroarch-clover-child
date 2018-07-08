@@ -80,6 +80,18 @@ fi
 
 source /etc/libretro/retroarch-mounted.cfg
 
+if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] && [ ! -d /var/mount ]; then
+  mkdir -p /var/mount
+  if [ ! -z "${ra_mount_user// }" ] && [ ! -z "${ra_mount_pass// }" ]; then
+    mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass $ra_mount_address /var/mount
+    if [ ! -z "${ra_mount_user// }" ] && [ -z "${ra_mount_pass// }" ]; then
+      mount -t cifs -o user=$ra_mount_user $ra_mount_address /var/mount
+    else
+      mount -t cifs $ra_mount_address /var/mount
+    fi
+  fi
+fi
+
 #### Saves and Configs #####################################################
 
 [ ! -z "$demo" ] && load="$(dirname "$load")/savestate"
