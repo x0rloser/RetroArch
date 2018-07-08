@@ -5,7 +5,6 @@ script_init
 
 uistop # Kill it! Kill it with fire!
 
-exec retroarch-clover-child
 if [ -f "/bin/remote-exec" ]; then
   echo retroarch-clover-child > /var/exec.flag
 else
