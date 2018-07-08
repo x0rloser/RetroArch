@@ -1,5 +1,7 @@
 Hakchi_Libretro_Initialise(){
-  if [ -z "$(mount | grep "/etc/libretro ")" ] && [ -d "$mountpoint/media/$modname" ] && [ "$cfg_usb_rw" == "y" ]; then
+  local writeTest="$mountpoint/media/$modname/write-test"
+  if [ -z "$(mount | grep "/etc/libretro ")" ] && [ -d "$mountpoint/media/$modname" ] && touch "$writeTest"; then
+    rm "$writeTest"
     local externalPath="$mountpoint/media/data/ra_data"
     local localPath="$rootfs/etc/libretro/.config/retroarch"
     for ra_folders in database thumbnails playlists downloads; do
