@@ -4,8 +4,12 @@
 # Might not be needed for your build but it's a useful tool and for safety it should be
 # run anyway to ensure the SDL2 link isn't broken...
 
-HAKCHI_DIR := hakchi
 HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b
+HAKCHI_NAME := "Hakchi RetroArch 'Neo' v1.7.3b
+MOD_CREATOR := TheOtherGuys
+MOD_CATEGORY := RetroArch
+
+HAKCHI_DIR := hakchi
 TARGET := retroarch
 GIT_COMMIT := $(shell echo "`git rev-parse --short HEAD``git diff-index --quiet HEAD -- || echo '-dirty'`")
 
@@ -20,6 +24,19 @@ retroarch:
 	rm -f $(HAKCHI_DIR)/bin/retroarch
 	cp retroarch $(HAKCHI_DIR)/bin/retroarch
 	echo $$(echo "Built by: " $$USER @ $$(date) \\\\\\ Git Commit: $(GIT_COMMIT)) > $(HAKCHI_DIR)/etc/libretro/retroarch_version
+	cp $(HAKCHI_DIR)/readme.md $(HAKCHI_DIR)/readme_COPY.md
+	printf "%s\n" \
+	"---" \
+	"Name: $(HAKCHI_VER)" \
+	"Creator: $(MOD_CREATOR)" \
+	"Category: $(MOD_CATEGORY)" \
+	"Version: $(HAKCHI_VER)" \
+	"Built on: $(shell date)" \
+	"Git commit: $(GIT_COMMIT)" \
+	"---" > $(HAKCHI_DIR)/readme.md
+	cat CHANGES_HAKCHI.md >> $(HAKCHI_DIR)/readme.md
+	cat $(HAKCHI_DIR)/readme_COPY.md >> $(HAKCHI_DIR)/readme.md
+	rm $(HAKCHI_DIR)/readme_COPY.md
 	@echo "** BUILDING HAKCHI $(HAKCHI_VER) HMOD PACKAGE **"
 	cd $(HAKCHI_DIR)/; tar -czvf "$(HAKCHI_VER).hmod" *
 	mv $(HAKCHI_DIR)/$(HAKCHI_VER).hmod .

@@ -1,18 +1,13 @@
------------------------
-Name: RetroArch Neo 1.7.3b
-Creator: TheOtherGuys
-Category: RetroArch
------------------------
 
-# Got to redo this shit.
 
-Cores by libretro
+RetroArch and Retroarch Cores by libretro
 
-NES Mini port by madmonkey
+Hakchi RetroArch Neo main development by Swingflip, Bslenul and CompCom
 
-NES Mini shell integration by Cluster
+Hakchi by MadMonkey 
 
-Additional modules by pcm
+Special thanks to Team Hakchi Resources, Team Shinkansen and MadMonkey
+
+https://hakchiresources.com
 
 (c) 2016-2018
-
