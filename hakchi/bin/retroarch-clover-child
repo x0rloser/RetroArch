@@ -79,7 +79,6 @@ if [ -f "/media/hakchi/retroarch-mounted.cfg" ]; then
 fi
 
 source /etc/libretro/retroarch-mounted.cfg
-
 if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] && [ ! -d /var/mount ]; then
   mkdir -p /var/mount
   if [ ! -z "${ra_mount_user// }" ] && [ ! -z "${ra_mount_pass// }" ]; then
@@ -307,6 +306,11 @@ if [ -d "/media/hakchi" ] && ls "/var/cache/retroarch/$id".*[^auto]; then
   cp "/var/cache/retroarch/$id".*[^auto] "/media/data/ra_savestates/$title_code"
 fi
 rm -rf /var/cache/retroarch/
+
+#Remove network drive mount if Hakchi Mount mod is enabled
+if [ ! -f "$rootfs/etc/hakchi_mount_mod" ]; then
+  umount "/var/mount"
+fi
 
 if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   echo "Post RA load Core Temp: $(more /sys/devices/virtual/thermal/thermal_zone0/temp)" >> /media/Development_RA_temp.log
