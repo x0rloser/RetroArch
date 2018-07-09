@@ -317,4 +317,4 @@ if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current sess
 fi
 
 # Back to the shell
-uistart #Not really needed but just incase.
+uistart
