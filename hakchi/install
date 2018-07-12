@@ -38,7 +38,7 @@ done
 
 
 echo "Reloading built in config..."
-sed -i -e 's/cheevos_username = "[^"]*"/cheevos_username = "$hakchiresources"/g' $rootfs/etc/libretro/retroarch.cfg
+sed -i -e 's/cheevos_username = "[^"]*"/cheevos_username = "$cheevos_username"/g' $rootfs/etc/libretro/retroarch.cfg
 sed -i -e 's/cheevos_password = "[^"]*"/cheevos_password = "$cheevos_password"/g' $rootfs/etc/libretro/retroarch.cfg
 sed -i -e 's/cheevos_token = "[^"]*"/cheevos_token = "$cheevos_token"/g' $rootfs/etc/libretro/retroarch.cfg
 sed -i -e 's/netplay_mitm_server = "[^"]*"/netplay_mitm_server = "$netplay_mitm_server"/g' $rootfs/etc/libretro/retroarch.cfg
