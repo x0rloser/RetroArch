@@ -277,26 +277,20 @@ fi
 
 #### Watchdog ##############################################################
 
-rpid=$!
-
-[ ! -z "$save" ] && mkdir -p "$(dirname "$save")"
-[ ! -z "$sram" ] && mkdir -p "$(dirname "$sram")"
-[ ! -z "$screenshot" ] && mkdir -p "$(dirname "$screenshot")"
-
 # Set Watchdog Arguments
-watchdog_args="$rpid"
-
+watchdog_args="$!"
 # Demo mode enabled
-if [ ! -z "$demo" ]; then
-  watchdog_args="$watchdog_args --demo"
-fi
+[ ! -z "$demo" ] && watchdog_args="$watchdog_args --demo"
 # Set Screenshot Args
-if [ ! -z "$screenshot" ] && [ -z "$nosaves" ]; then
-  watchdog_args="$watchdog_args --screenshot $screenshot"
-fi
+[ ! -z "$screenshot" ] && [ -z "$nosaves" ] && watchdog_args="$watchdog_args --screenshot $screenshot"
 # Load Time Played
 [ -f "$timefile_load" ] && watchdog_args="$watchdog_args --time $(cat "$timefile_load")"
 [ -z "$demo" ] && watchdog_args="$watchdog_args --timePath $timefile_save"
+
+# Create output folders
+[ ! -z "$save" ] && mkdir -p "$(dirname "$save")"
+[ ! -z "$sram" ] && mkdir -p "$(dirname "$sram")"
+[ ! -z "$screenshot" ] && mkdir -p "$(dirname "$screenshot")"
 
 # Run retroarch watchdog
 retroarch_watchdog $watchdog_args
