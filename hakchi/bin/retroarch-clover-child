@@ -237,6 +237,15 @@ fi
 [ "$filter" == "crt720" ] && [ ! -z "$no_smooth" ] && smooth false
 [ "$filter" == "gpu720" ] && [ ! -z "$smooth43" ] && smooth true
 
+# Set config for standalone launch mode
+if [ -z "${corename// }" ]; then
+    ra_config_args="$ra_config_args savefile_directory /var/saves/CLV-Z-RETROARCH"
+    ra_config_args="$ra_config_args savestate_directory /var/saves/CLV-Z-RASAVESTATES"
+    ra_config_args="$ra_config_args savestate_auto_save false"
+    ra_config_args="$ra_config_args savestate_auto_load false"
+    ra_config_args="$ra_config_args autosave_interval 0"
+fi
+
 [ ! -z "$ra_config_args" ] && retroarch_watchdog --configEdit /etc/libretro/retroarch.cfg $ra_config_args
 
 #### Runtime ###############################################################
@@ -273,21 +282,6 @@ rpid=$!
 [ ! -z "$save" ] && mkdir -p "$(dirname "$save")"
 [ ! -z "$sram" ] && mkdir -p "$(dirname "$sram")"
 [ ! -z "$screenshot" ] && mkdir -p "$(dirname "$screenshot")"
-
-#Set config depending on launch mode
-if [ -z "${corename// }" ]; then #Standalone Launcher Config
-    savefile_directory(){ ra_config_args="$ra_config_args savefile_directory /var/saves/CLV-Z-RETROARCH"; }
-    savestate_directory(){ ra_config_args="$ra_config_args savestate_directory /var/saves/CLV-Z-RASAVESTATES"; }
-    savestate_auto_save(){ ra_config_args="$ra_config_args savestate_auto_save false"; }
-    savestate_auto_load(){ ra_config_args="$ra_config_args savestate_auto_load false"; }
-    autosave_interval(){ ra_config_args="$ra_config_args autosave_interval 0"; }
-else #Direct Rom Launch Config
-    savefile_directory(){ ra_config_args="$ra_config_args savefile_directory /var/saves/retroarch"; }
-    savestate_directory(){ ra_config_args="$ra_config_args savestate_directory /var/saves/retroarch"; }
-    savestate_auto_save(){ ra_config_args="$ra_config_args savestate_auto_save true"; }
-    savestate_auto_load(){ ra_config_args="$ra_config_args savestate_auto_load true"; }
-    autosave_interval(){ ra_config_args="$ra_config_args autosave_interval 10"; }
-fi
 
 # Set Watchdog Arguments
 watchdog_args="$rpid"
