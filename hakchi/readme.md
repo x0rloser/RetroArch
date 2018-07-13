@@ -5,7 +5,7 @@
 
 ### 1.7.3b - July 2018
 
-**Please note: NES cores are no longer bundled with RA. You will need to download them seperately**
+**Please note: NES cores are no longer bundled with RA. You will need to download them seperately from HR.com or the ModStore**
 
 **Please note: Standalone RetroArch Saves will be located in your saves under CLV-RETROARCH** 
 
