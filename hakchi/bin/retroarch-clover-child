@@ -83,11 +83,10 @@ if [ "$ra_mount_enable" == "true" ] && [ ! -z "${ra_mount_address// }" ] && [ ! 
   mkdir -p /var/mount
   if [ ! -z "${ra_mount_user// }" ] && [ ! -z "${ra_mount_pass// }" ]; then
     mount -t cifs -o user=$ra_mount_user,pass=$ra_mount_pass $ra_mount_address /var/mount
-    if [ ! -z "${ra_mount_user// }" ] && [ -z "${ra_mount_pass// }" ]; then
-      mount -t cifs -o user=$ra_mount_user $ra_mount_address /var/mount
-    else
-      mount -t cifs $ra_mount_address /var/mount
-    fi
+  elif [ ! -z "${ra_mount_user// }" ] && [ -z "${ra_mount_pass// }" ]; then
+    mount -t cifs -o user=$ra_mount_user $ra_mount_address /var/mount
+  else
+    mount -t cifs $ra_mount_address /var/mount
   fi
 fi
 
@@ -312,7 +311,7 @@ rm -rf /var/cache/retroarch/
 
 #Remove network drive mount if Hakchi Mount mod is enabled
 if [ ! -f "$rootfs/etc/hakchi_mount_mod" ]; then
-  umount "/var/mount"
+  umount "/var/mount" && rm -rf "/var/mount"
 fi
 
 if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
