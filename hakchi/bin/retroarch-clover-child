@@ -13,8 +13,9 @@ rom="$2"
 filename="$(basename "$rom")"
 id="${filename%.*}"
 extension="${filename##*.}"
-newrsram=/var/saves/retroarch
-autosave="/var/cache/retroarch/$id.state.auto"
+save_folder="/var/cache/retroarch/save"
+state_folder="/var/cache/retroarch/state"
+autosave="$state_folder/$id.state.auto"
 t_suffix=_time.txt
 debug=0
 bezel_mode=0
@@ -95,85 +96,58 @@ fi
 
 [ ! -z "$demo" ] && load="$(dirname "$load")/savestate"
 
-# Create cache and /var/saves/retroarch directories
+# Create cache directory
 mkdir -p /var/cache/retroarch
-mkdir -p "$newrsram"
 
-# Create a "cartridge.sram" file of 21B to avoid hakchi2 save-state manager from removing the folder
-# Just in case we're going the "/var/saves/CLV-Z-RETROARCH" way
-# if [ -f "/var/saves/CLV-Z-RETROARCH/cartridge.sram" ]; then
-  # [ "$(wc -c </var/saves/CLV-Z-RETROARCH/cartridge.sram)" -lt 21 ] && rm /var/saves/CLV-Z-RETROARCH/cartridge.sram && dd if=/dev/zero of=/var/saves/CLV-Z-RETROARCH/cartridge.sram bs=21 count=1
-# else
-  # dd if=/dev/zero of=/var/saves/CLV-Z-RETROARCH/cartridge.sram bs=21 count=1
-# fi
-
-# Moving RetroArch saves from "/var/saves/" to "/var/saves/retroarch/" if the ID is known (if the .desktop is on the console atm)
-if [ -z "$(ls -A "$newrsram")" ]; then # so this whole part only executes at the 1st launch
-  if [ -d "/media/hakchi" ]; then
-    desktop_search="/media/hakchi/games"
-  else
-    desktop_search="/var/lib/hakchi/games"
-  fi
-  for rasaves in /var/saves/CLV-*; do
-    fdsgame=0
-    canoecheck=0
-    gameid="$(basename "$rasaves")"
-	# [ "$gameid" = "CLV-Z-RETROARCH" ] && continue
-    if [ -f "$rasaves/cartridge.sram" ] && [ -f "$rasaves/cartridge.sram.hash" ]; then
-      [ "$(tail -c 20 "$rasaves/cartridge.sram")" = "$(cat "$rasaves/cartridge.sram.hash")" ] && canoecheck=1 # check if thats a Canoe save
-    fi
-    if [ "$canoecheck" = 0 ] && [ -f "$rasaves/cartridge.sram" ]; then
-      if [ ! -z "$(find "$desktop_search" -name "$gameid.desktop")" ]; then # search for .desktop file
-	    filename2="$(cat `find "$desktop_search" -name "$gameid.desktop"` | grep "^Exec=" | basename `awk '{print $2}'`)"
-		[ "${filename2##*.}" = "fds" ] && fdsgame=1
-		filename2="${filename2%.*}"
-		if [ ! -z "$(cat `find "$desktop_search" -name "$gameid.desktop"` | grep "/bin/gpsp")" ]; then
-		  mv "$rasaves/cartridge.sram" "$newrsram/$filename2.sav" # rename the file to .sav if its a gpSP save
-		elif [ ! -z "$(cat `find "$desktop_search" -name "$gameid.desktop"` | grep "/bin/nes\|/bin/nestopia")" ] && [ "$fdsgame" = 1 ]; then
-		  mv "$rasaves/cartridge.sram" "$newrsram/$filename2.sav" # rename the file to .sav if its a FDS Nestopia save
-		else
-		  mv "$rasaves/cartridge.sram" "$newrsram/$filename2.srm" # rename the file to .srm
-		fi
-	  fi
-    fi
-    if ls "$rasaves" | grep -w "brm$"; then
-      mv "$rasaves/"*.brm "$newrsram" # no need to rename those, just move
-    fi
+# Set up standalone saves
+if [ -z "${corename// }" ]; then
+  save_folder="/var/saves/CLV-Z-RETROARCH"
+  state_folder="/var/saves/CLV-Z-RASAVESTATES"
+  
+  # Create save directories
+  mkdir -p "$save_folder"
+  mkdir -p "$state_folder"
+  
+  for arcade_folder in /etc/libretro/.config/retroarch/config/arcade/*; do
+    [ ! -d "$arcade_folder" ] && continue
+    [ ! -d "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")" ] && mkdir "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")" && mount_bind "$arcade_folder" "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")"
   done
-fi
-
-# Copy savestates from USB if any
-if [ -d "/media/data/ra_savestates" ] && ls "/media/data/ra_savestates/$title_code/$id.state"*; then
-  cp "/media/data/ra_savestates/$title_code/$id.state"* /var/cache/retroarch
-fi
-
-# Move mame config files to "/var/saves/retroarch"
-if [ -d "/etc/libretro/.config/retroarch/config/arcade" ]; then
-  if [ ! -z "$(ls -A /etc/libretro/.config/retroarch/config/arcade)" ]; then
-    mv /etc/libretro/.config/retroarch/config/arcade/* "$newrsram"
-	[ -z "$(ls -A /etc/libretro/.config/retroarch/config/arcade)" ] && rmdir /etc/libretro/.config/retroarch/config/arcade
-  fi
-fi
-
-# saves if any
-if [ ! -z "$load" ] && [ -f "$load" ] && [ -z "$nosaves" ]; then
-  if [ "$(hexdump -n 2 -e '1/1 "%02X"' "$load")" == "1F8B" ]; then
-    cp -f "$load" "$autosave.gz"
-    gunzip -f "$autosave.gz"
-  else
-    cp -f "$load" "$autosave"
-  fi
-fi
-
-# Moving and renaming save from "/var/saves/CLV-*/cartridge.*" to "/var/saves/retroarch/$id.*" that were previously unknown
-if [ "$noprefix" == "nestopia" ] && [ "$extension" == "fds" ]; then
-  [ ! -z "$sram" ] && [ -f "$sram" ] && mv "$sram" "$newrsram/$id.sav"
-elif [ "$noprefix" == "gpsp" ]; then
-  [ ! -z "$sram" ] && [ -f "$sram" ] && mv "$sram" "$newrsram/$id.sav"
-elif [ "$noprefix" == "genesis_plus_gx" ]; then
-  [ -f "/var/saves/$title_code/$id.brm" ] && mv "/var/saves/$title_code/$id.brm" "$newrsram"
 else
-  [ ! -z "$sram" ] && [ -f "$sram" ] && mv "$sram" "$newrsram/$id.srm"
+  # Create save directories
+  mkdir -p "$save_folder"
+  mkdir -p "$state_folder"
+
+  # Copy savestates from USB if any
+  if [ -d "/media/data/ra_savestates" ] && ls "/media/data/ra_savestates/$title_code/$id.state"*; then
+    cp "/media/data/ra_savestates/$title_code/$id.state"* "$state_folder"
+  fi
+  
+  # Move save state (decompressing if needed)
+  if [ ! -z "$load" ] && [ -f "$load" ] && [ -z "$nosaves" ]; then
+    if [ "$(hexdump -n 2 -e '1/1 "%02X"' "$load")" == "1F8B" ]; then
+      cp -f "$load" "$autosave.gz"
+      gunzip -f "$autosave.gz"
+    else
+      cp -f "$load" "$autosave"
+    fi
+  fi
+  
+  # Overmount for mame config files (${noprefix%%_*} are for cores like mame2003_xtreme)
+  if echo $corename | grep mame; then
+    [ ! -d "/etc/libretro/.config/retroarch/config/arcade/${noprefix%%_*}" ] && mkdir -p /etc/libretro/.config/retroarch/config/arcade/${noprefix%%_*}
+    mkdir -p $save_folder/${noprefix%%_*} && mount_bind /etc/libretro/.config/retroarch/config/arcade/${noprefix%%_*} $save_folder/${noprefix%%_*}
+  fi
+  if echo $corename | grep fbalpha; then
+    [ ! -d "/etc/libretro/.config/retroarch/config/arcade/fba" ] && mkdir -p /etc/libretro/.config/retroarch/config/arcade/fba
+    mkdir -p $save_folder/fba && mount_bind /etc/libretro/.config/retroarch/config/arcade/fba $save_folder/fba
+  fi
+  
+  # Move save file to cache save directory.
+  if [ -f "$(dirname "$sram")/$id".* ]; then
+    cp -f "$(dirname "$sram")/$id".* "$save_folder"
+  else
+    cp -f "$sram" "$save_folder/$id.srm"
+  fi
 fi
 
 #### General ###############################################################
@@ -237,13 +211,19 @@ fi
 [ "$filter" == "crt720" ] && [ ! -z "$no_smooth" ] && smooth false
 [ "$filter" == "gpu720" ] && [ ! -z "$smooth43" ] && smooth true
 
-# Set config for standalone launch mode
+
+ra_config_args="$ra_config_args savefile_directory $save_folder"
+ra_config_args="$ra_config_args savestate_directory $state_folder"
+
+# Set Save Config for standalone launch mode
 if [ -z "${corename// }" ]; then
-    ra_config_args="$ra_config_args savefile_directory /var/saves/CLV-Z-RETROARCH"
-    ra_config_args="$ra_config_args savestate_directory /var/saves/CLV-Z-RASAVESTATES"
     ra_config_args="$ra_config_args savestate_auto_save false"
     ra_config_args="$ra_config_args savestate_auto_load false"
     ra_config_args="$ra_config_args autosave_interval 0"
+else # Ensure correct Save Config is set for direct rom launch mode
+    ra_config_args="$ra_config_args savestate_auto_save true"
+    ra_config_args="$ra_config_args savestate_auto_load true"
+    ra_config_args="$ra_config_args autosave_interval 10"
 fi
 
 [ ! -z "$ra_config_args" ] && retroarch_watchdog --configEdit /etc/libretro/retroarch.cfg $ra_config_args
@@ -297,17 +277,35 @@ retroarch_watchdog $watchdog_args
 
 #### Cleanup ###############################################################
 
-# Saves!
-[ ! -z "$save" ] && [ -f "$autosave" ] && [ -z "$nosaves" ] && gzip -f "$autosave" && mv -f "$autosave.gz" "$save"
+# If direct rom mode, handle saves
+if [ ! -z "${corename// }" ]; then
+  # Move suspendpoint
+  [ ! -z "$save" ] && [ -f "$autosave" ] && [ -z "$nosaves" ] && gzip -f "$autosave" && mv -f "$autosave.gz" "$save"
+
+  # Copy savestates to USB if any
+  if [ -d "/media/hakchi" ] && ls "$state_folder/$id".*[^auto]; then
+    [ ! -d "/media/data/ra_savestates/$title_code" ] && mkdir -p "/media/data/ra_savestates/$title_code"
+    cp "$state_folder/$id".*[^auto] "/media/data/ra_savestates/$title_code"
+  fi
+  
+  # Move save file
+  if [ -f "$save_folder/$id.srm" ]; then
+    mv -f "$save_folder/$id.srm" "$sram"
+  else
+    # Create sram file - Prevent deletion by Hakchi Save Manager
+    touch "$(dirname "$sram")/save.sram"
+    mv -f "$save_folder/$id".* "$(dirname "$sram")"
+  fi
+  
+  # Unmount any config folders
+  mountpoint $save_folder/${noprefix%%_*} && umount $save_folder/${noprefix%%_*}
+  mountpoint $save_folder/fba && umount $save_folder/fba
+fi
 
 # Restore Retroarch Config
 retroarch_watchdog --configRestore /etc/libretro/retroarch.cfg
 
-# Copy savestates to USB if any and delete cache folder
-if [ -d "/media/hakchi" ] && ls "/var/cache/retroarch/$id".*[^auto]; then
-  [ ! -d "/media/data/ra_savestates/$title_code" ] && mkdir -p "/media/data/ra_savestates/$title_code"
-  cp "/var/cache/retroarch/$id".*[^auto] "/media/data/ra_savestates/$title_code"
-fi
+# Delete cache folder
 rm -rf /var/cache/retroarch/
 
 #Remove network drive mount if Hakchi Mount mod is enabled

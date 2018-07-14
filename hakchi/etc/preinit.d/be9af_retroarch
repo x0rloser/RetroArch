@@ -17,4 +17,39 @@ Hakchi_Libretro_Initialise(){
   fi
   [ -f "$mountpoint/usr/bin/clover-kachikachi" ] && overmount /usr/bin/clover-kachikachi
   [ -f "$mountpoint/usr/bin/clover-canoe-shvc" ] && overmount /usr/bin/clover-canoe-shvc
+  
+  # Compatibility fix for old hakchi versions
+  [ ! -L "$mountpoint/var/saves" ] && ln -s "/var/lib/clover/profiles/0" "$mountpoint/var/saves"
+}
+
+Hakchi_RetroArch_Save_Rename(){
+  if [ -d "/media/hakchi" ]; then
+    desktop_search="/media/hakchi/games"
+  else
+    desktop_search="$rootfs/usr/share/games"
+  fi
+  for rasaves in /var/saves/CLV-*; do
+    fdsgame=0
+    gameid="$(basename "$rasaves")"
+	  # Check for canoe save
+    if [ -f "$rasaves/cartridge.sram" ] && [ -f "$rasaves/cartridge.sram.hash" ]; then
+      [ "$(tail -c 20 "$rasaves/cartridge.sram")" = "$(cat "$rasaves/cartridge.sram.hash")" ] && continue 
+    fi
+    if [ -f "$rasaves/cartridge.sram" ]; then
+      # Search for .desktop file
+      desktop_file="$(find "$desktop_search" -name "$gameid.desktop")"
+      if [ ! -z "$desktop_file" ]; then
+	      filename2="$(cat "$desktop_file" | grep "^Exec=" | basename `awk '{print $2}'`)"
+		    [ "${filename2##*.}" = "fds" ] && fdsgame=1
+		    filename2="${filename2%.*}"
+		    if [ ! -z "$(cat "$desktop_file" | grep "/bin/gpsp")" ]; then
+		      touch "$rasaves/save.sram"
+		      mv "$rasaves/cartridge.sram" "$rasaves/$gameid.sav" # rename the file to .sav if its a gpSP save
+		    elif [ ! -z "$(cat "$desktop_file" | grep "/bin/nes\|/bin/nestopia")" ] && [ "$fdsgame" = 1 ]; then
+		      touch "$rasaves/save.sram"
+		      mv "$rasaves/cartridge.sram" "$rasaves/$gameid.sav" # rename the file to .sav if its a FDS Nestopia save
+		    fi
+	    fi
+    fi
+  done
 }
