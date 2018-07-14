@@ -63,7 +63,7 @@ if [ ! -z "$custom_loadscreen" ]; then
   decodepng "$rootfs/share/retroarch/assets/$custom_loadscreen" > /dev/fb0;
 else
   if [ -f "$mountpoint/media/hakchi/RA_loading_screens/$noprefix.png" ] && [ -f "$rootfs/share/retroarch/assets/RAloading-min.png" ]; then
-	  decodepng "$mountpoint/media/hakchi/RA_loading_screens/$noprefix.png"  > /dev/fb0;
+    decodepng "$mountpoint/media/hakchi/RA_loading_screens/$noprefix.png"  > /dev/fb0;
   else
     if [ -f "$rootfs/share/retroarch/assets/core_loading_screens/$noprefix.png" ] && [ -f "$rootfs/share/retroarch/assets/RAloading-min.png" ]; then
       decodepng "$rootfs/share/retroarch/assets/core_loading_screens/$noprefix.png"  > /dev/fb0;
@@ -109,7 +109,8 @@ if [ -z "${corename// }" ]; then
   
   for arcade_folder in /etc/libretro/.config/retroarch/config/arcade/*; do
     [ ! -d "$arcade_folder" ] && continue
-    [ ! -d "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")" ] && mkdir "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")" && mount_bind "$arcade_folder" "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")"
+    [ ! -d "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")" ] && mkdir "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")"
+    mountpoint "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")" || mount_bind "$arcade_folder" "/var/saves/CLV-Z-RETROARCH/$(basename "$arcade_folder")"
   done
 else
   # Create save directories
