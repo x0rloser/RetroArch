@@ -23,12 +23,12 @@ Hakchi_Libretro_Initialise(){
 }
 
 Hakchi_RetroArch_Save_Rename(){
-  if [ -d "/media/hakchi" ]; then
-    desktop_search="/media/hakchi/games"
+  if [ -d "$mountpoint/media/hakchi" ]; then
+    desktop_search="$mountpoint/media/hakchi/games"
   else
-    desktop_search="$rootfs/usr/share/games"
+    desktop_search="$mountpoint/var/lib/hakchi/games"
   fi
-  for rasaves in /var/saves/CLV-*; do
+  for rasaves in "$mountpoint/$profilepath/CLV-"*; do
     fdsgame=0
     gameid="$(basename "$rasaves")"
     # Check for canoe save
