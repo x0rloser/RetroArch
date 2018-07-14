@@ -5,7 +5,7 @@
 # run anyway to ensure the SDL2 link isn't broken...
 
 HAKCHI_VER := Hakchi_Retroarch_Neo_v1_7_3b
-HAKCHI_NAME := "Hakchi RetroArch 'Neo' v1.7.3b
+HAKCHI_NAME := Hakchi RetroArch 'Neo' v1.7.3b
 MOD_CREATOR := TheOtherGuys
 MOD_CATEGORY := RetroArch
 
@@ -27,14 +27,13 @@ retroarch:
 	cp $(HAKCHI_DIR)/readme.md $(HAKCHI_DIR)/readme_COPY.md
 	printf "%s\n" \
 	"---" \
-	"Name: $(HAKCHI_VER)" \
+	"Name: $(HAKCHI_NAME)" \
 	"Creator: $(MOD_CREATOR)" \
 	"Category: $(MOD_CATEGORY)" \
 	"Version: $(HAKCHI_VER)" \
 	"Built on: $(shell date)" \
 	"Git commit: $(GIT_COMMIT)" \
 	"---" > $(HAKCHI_DIR)/readme.md
-	cat CHANGES_HAKCHI.md >> $(HAKCHI_DIR)/readme.md
 	cat $(HAKCHI_DIR)/readme_COPY.md >> $(HAKCHI_DIR)/readme.md
 	rm $(HAKCHI_DIR)/readme_COPY.md
 	@echo "** BUILDING HAKCHI $(HAKCHI_VER) HMOD PACKAGE **"
