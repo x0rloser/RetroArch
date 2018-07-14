@@ -309,11 +309,6 @@ retroarch_watchdog --configRestore /etc/libretro/retroarch.cfg
 # Delete cache folder
 rm -rf /var/cache/retroarch/
 
-#Remove network drive mount if Hakchi Mount mod is enabled
-if [ ! -f "$rootfs/etc/hakchi_mount_mod" ]; then
-  umount "/var/mount" && rm -rf "/var/mount"
-fi
-
 if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
   echo "Post RA load Core Temp: $(more /sys/devices/virtual/thermal/thermal_zone0/temp)" >> /media/Development_RA_temp.log
 fi
