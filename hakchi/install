@@ -9,6 +9,10 @@ netplay_ip_address=$(grep -i "netplay_ip_address*" $rootfs/etc/libretro/retroarc
 netplay_password=$(grep -i "netplay_password*" $rootfs/etc/libretro/retroarch.cfg)
 netplay_spectate_password=$(grep -i "netplay_spectate_password*" $rootfs/etc/libretro/retroarch.cfg)
 
+if [ -f "$rootfs/etc/libretro/retroarch-mounted.cfg" ]; then
+  cp -f $rootfs/etc/libretro/retroarch-mounted.cfg /tmp/retroarch-mounted.cfg
+fi
+
 echo "Uninstalling old version of Hakchi RetroArch neo..."
 var=$(hakchi pack_list | grep "Hakchi_Retroarch_Neo_") && hakchi pack_uninstall $var
 echo "Uninstalled $var, Installing new version now..."
@@ -46,10 +50,17 @@ sed -i -e 's/netplay_ip_port = "[^"]*"/netplay_ip_port = "'$netplay_ip_port'"/g'
 sed -i -e 's/netplay_ip_address = "[^"]*"/netplay_ip_address = "'$netplay_ip_address'"/g' $rootfs/etc/libretro/retroarch.cfg
 sed -i -e 's/netplay_spectate_password = "[^"]*"/netplay_spectate_password = "'$netplay_spectate_password'"/g' $rootfs/etc/libretro/retroarch.cfg
 
-if [ "$cheevos_username" == "hakchiresources" ]; then
+if [ "$cheevos_username" == "cheevos_username = \"hakchiresources\"" ]; then
   sed -i -e 's/cheevos_enable = "[^"]*"/cheevos_enable = "false"/g' $rootfs/etc/libretro/retroarch.cfg
 fi
 
+if [ "$cheevos_username" == "cheevos_username = \"\"" ]; then
+  sed -i -e 's/cheevos_enable = "[^"]*"/cheevos_enable = "false"/g' $rootfs/etc/libretro/retroarch.cfg
+fi
+
+if [ -f "/tmp/retroarch-mounted.cfg" ]; then
+  cp -f /tmp/retroarch-mounted.cfg $rootfs/etc/libretro/retroarch-mounted.cfg
+fi
 
 echo "Install complete!"
 return 1
