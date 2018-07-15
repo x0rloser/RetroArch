@@ -311,7 +311,8 @@ rm -rf /var/cache/retroarch/
 
 #Remove network drive mount if Hakchi Mount mod is not enabled
 if [ ! -f "$rootfs/etc/hakchi_mount_mod" ]; then
-  umount "/var/mount" && rm -rf "/var/mount"
+  umount "/var/mount"
+  rm -rf "/var/mount"
 fi
 
 if [ -f "/media/hakchi/RA_DEV_MODE" ]; then #Devmode Active (Record current session)
