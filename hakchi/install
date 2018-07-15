@@ -1,13 +1,13 @@
 echo "Grabbing old config variables..."
-cheevos_username=$(grep -i "cheevos_username*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-cheevos_password=$(grep -i "cheevos_password*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-cheevos_token=$(grep -i "cheevos_token*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-netplay_nickname=$(grep -i "netplay_nickname*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-netplay_mitm_server=$(grep -i "netplay_mitm_server*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-netplay_ip_port=$(grep -i "netplay_ip_port*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-netplay_ip_address=$(grep -i "netplay_ip_address*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-netplay_password=$(grep -i "netplay_password*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
-netplay_spectate_password=$(grep -i "netplay_spectate_password*" /var/lib/hakchi/rootfs/etc/libretro/retroarch.cfg)
+cheevos_username=$(grep -i "cheevos_username*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+cheevos_password=$(grep -i "cheevos_password*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+cheevos_token=$(grep -i "cheevos_token*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+netplay_nickname=$(grep -i "netplay_nickname*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+netplay_mitm_server=$(grep -i "netplay_mitm_server*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+netplay_ip_port=$(grep -i "netplay_ip_port*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+netplay_ip_address=$(grep -i "netplay_ip_address*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+netplay_password=$(grep -i "netplay_password*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
+netplay_spectate_password=$(grep -i "netplay_spectate_password*" $rootfs/etc/libretro/retroarch.cfg | awk '{print $3}' | sed "s/\"//g")
 
 if [ -f "$rootfs/etc/libretro/retroarch-mounted.cfg" ]; then
   cp -f $rootfs/etc/libretro/retroarch-mounted.cfg /tmp/retroarch-mounted.cfg
