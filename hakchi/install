@@ -52,11 +52,11 @@ if [ -f "$rootfs/etc/libretro/retroarch.cfg" ]; then
   sed -i -e 's/netplay_ip_address = "[^"]*"/netplay_ip_address = "'$netplay_ip_address'"/g' $rootfs/etc/libretro/retroarch.cfg
   sed -i -e 's/netplay_spectate_password = "[^"]*"/netplay_spectate_password = "'$netplay_spectate_password'"/g' $rootfs/etc/libretro/retroarch.cfg
 
-  if [ "$cheevos_username" == "cheevos_username = \"hakchiresources\"" ]; then
+  if [ "$cheevos_username" == "hakchiresources" ]; then
     sed -i -e 's/cheevos_enable = "[^"]*"/cheevos_enable = "false"/g' $rootfs/etc/libretro/retroarch.cfg
   fi
 
-  if [ "$cheevos_username" == "cheevos_username = \"\"" ]; then
+  if [ -z "${cheevos_username// }" ]; then
     sed -i -e 's/cheevos_enable = "[^"]*"/cheevos_enable = "false"/g' $rootfs/etc/libretro/retroarch.cfg
   fi
 
