@@ -143,8 +143,8 @@ else
   fi
   
   # Move save file to cache save directory.
-  if [ -f "$(dirname "$sram")/$id".* ]; then
-    cp -f "$(dirname "$sram")/$id".* "$save_folder"
+  if [ -f "$(dirname "$sram")/${id%%.*}".* ]; then
+    cp -f "$(dirname "$sram")/${id%%.*}".* "$save_folder"
   else
     cp -f "$sram" "$save_folder/$id.srm"
   fi
@@ -295,7 +295,7 @@ if [ ! -z "${corename// }" ]; then
   else
     # Create sram file - Prevent deletion by Hakchi Save Manager
     touch "$(dirname "$sram")/save.sram"
-    mv -f "$save_folder/$id".* "$(dirname "$sram")"
+    mv -f "$save_folder/${id%%.*}".* "$(dirname "$sram")"
   fi
   
   # Unmount any config folders
