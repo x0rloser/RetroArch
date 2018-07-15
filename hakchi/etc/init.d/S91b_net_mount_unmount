@@ -8,7 +8,8 @@ start()
 stop()
 {
 	if [ -d /var/mount ]; then
-    umount "/var/mount" && rm -rf "/var/mount"
+    umount "/var/mount"
+    rm -rf "/var/mount"
   fi
 }
 
