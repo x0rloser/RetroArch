@@ -25,9 +25,14 @@ Hakchi_Libretro_Initialise(){
 Hakchi_RetroArch_Save_Rename(){
   if [ -d "$mountpoint/media/hakchi" ]; then
     desktop_search="$mountpoint/media/hakchi/games"
-  else
+  elif [ -d "$mountpoint/var/lib/hakchi/games" ]; then
     desktop_search="$mountpoint/var/lib/hakchi/games"
+  else
+    desktop_search="$rootfs/usr/share/games"
   fi
+  
+  # Old Hakchi Compatibility fix
+  [ -z "$profilepath" ] && profilepath="/var/lib/clover/profiles/0"
   for rasaves in "$mountpoint/$profilepath/CLV-"*; do
     fdsgame=0
     gameid="$(basename "$rasaves")"
