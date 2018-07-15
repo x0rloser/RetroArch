@@ -49,10 +49,10 @@ Hakchi_RetroArch_Save_Rename(){
         filename2="${filename2%.*}"
         if [ ! -z "$(cat "$desktop_file" | grep "/bin/gpsp")" ]; then
           touch "$rasaves/save.sram"
-          mv "$rasaves/cartridge.sram" "$rasaves/$gameid.sav" # rename the file to .sav if its a gpSP save
+          mv "$rasaves/cartridge.sram" "$rasaves/$filename2.sav" # rename the file to .sav if its a gpSP save
         elif [ ! -z "$(cat "$desktop_file" | grep "/bin/nes\|/bin/nestopia")" ] && [ "$fdsgame" = 1 ]; then
           touch "$rasaves/save.sram"
-          mv "$rasaves/cartridge.sram" "$rasaves/$gameid.sav" # rename the file to .sav if its a FDS Nestopia save
+          mv "$rasaves/cartridge.sram" "$rasaves/$filename2.sav" # rename the file to .sav if its a FDS Nestopia save
         fi
       fi
     fi
