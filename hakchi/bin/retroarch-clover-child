@@ -142,6 +142,11 @@ else
     mkdir -p $save_folder/fba && mount_bind /etc/libretro/.config/retroarch/config/arcade/fba $save_folder/fba
   fi
   
+  # Compatibility fix for old RA saves
+  if [ "$corename" == "nestopia" ] && [ "$extension" == "fds" ] || [ "$noprefix" == "gpsp" ]; then
+    Hakchi_RetroArch_Save_Rename "$sram" "$noprefix" "$id"
+  fi
+  
   # Move save file to cache save directory.
   if [ -f "$(dirname "$sram")/${id%%.*}".* ]; then
     cp -f "$(dirname "$sram")/${id%%.*}".* "$save_folder"
