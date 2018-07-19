@@ -1,6 +1,10 @@
 
 ## New Release Overview video
 
+[![](http://img.youtube.com/vi/w0zodI_MS8Q/0.jpg)](http://www.youtube.com/watch?v=w0zodI_MS8Q "RetroArch 1.7.3b overview video")
+
+Watch this video from Patton Plays who explains the new features and how to use them
+
 ## Changelog
 
 ### 1.7.3b - July 2018
