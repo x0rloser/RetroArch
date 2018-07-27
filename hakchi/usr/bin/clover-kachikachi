@@ -11,60 +11,81 @@ decodepng "$rootfs/share/retroarch/assets/loading-min.png" > /dev/fb0;
 
 supported_mappers="0 1 2 3 4 5 7 9 10 86 87 184"
 emulator=retroarch
+clovercon_file=/dev/clovercon1
 
-args=$@
+args="$*"
 filename=$1
 extension=${filename##*.}
 
-if [ "$extension" == "nes" ]; then
+if [ "$extension" = "nes" ]; then
   header=$(hexdump -v -n 8 -e '1/1 "%02X"' "$filename")
   mapper=$((0x${header:14:1}${header:12:1}))
   fourscreen=$(expr $((0x${header:13:1})) / 8)
 
   echo mapper: $mapper
-  echo four-screen: $fourscreen
+  echo four-screen: "$fourscreen"
 
   for m in $supported_mappers; do
-    [ "$m" == "$mapper" ] && emulator=kachikachi
+    [ "$m" = "$mapper" ] && emulator=kachikachi
   done
-  [ "$fourscreen" == "1" ] && emulator=retroarch
+  [ "$fourscreen" = "1" ] && emulator=retroarch
 fi
 
-[ "$extension" == "fds" ] && emulator=kachikachi
+[ "$extension" = "fds" ] && emulator=kachikachi
+
+options="$options --fullscreen"
+options="$options --sync-guest-with-host"
+options="$options --fds-initial-disk-insert-on-keypress"
+options="$options --fds-auto-disk-side-switch"
+options="$options --fds-disable-host-guest-sync-on-disk-op"
+options="$options --keep-aspect-ratio"
 
 while [ $# -gt 0 ]; do
-  [ "$1" == "--retroarch" ] && emulator=retroarch
-  [ "$1" == "-retroarch" ] && emulator=retroarch
-  [ "$1" == "--core" ] && core=$2
-  [ "$1" == "-core" ] && core=$2
+  case "$1" in
+  --video-mode)
+    case "$2" in
+    keep-aspect-ratio) options="$options --graphic-filter gpu720 --ppu-palette v1.3" ;;
+    pixel-perfect) options="$options --graphic-filter ppu --ppu-palette v1.3" ;;
+    crt-filter) options="$options --graphic-filter crt720 --enable-crt-scanlines --ppu-palette v1.3" ;;
+    esac
+    shift
+    ;;
+  --record-inputs) options="$options --record-inputs inputs --input-record-cache checkpoints --input-record-checkpoint-period 3600" ;;
+  --title-code) title_code="$2"; shift ;;
+  --rollback-*) printf "unsupported usage scenario\\n" ; exit 127 ;;
+  --decorative-frame-path) shift ;;
+  --load-time-path) options="$options --load-time-file $2"; shift; ;;
+  --save-time-path) options="$options --save-time-file $2"; shift; ;;
+  --save-data-backing-file) sram_file="$2"; options="$options --save-data-backing-file $2"; shift ;;
+  --save-screenshot-on-quit) screenshot_file="$2"; options="$options --save-screenshot-on-quit $2"; shift ;;
+  --*-transition-fd) shift; ;;
+  -retroarch) emulator=retroarch ;;
+  --retroarch) emulator=retroarch ;;
+  -core) core="$2"; shift ;;
+  --core) core="$2"; shift ;;
+  *) options="$options $1" ;;
+  esac
   shift
 done
 
 # Do not use retroarch for original qd games
-args="$(echo $args | sed 's/--retroarch//g')"
-[ "$extension" == "qd" ] && emulator=kachikachi
+args="$(echo "$args" | sed 's/--retroarch//g')"
+[ "$extension" = "qd" ] && emulator=kachikachi
 
 # Hold up to forcely disable RetroArch
-[ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" == "1000" ] && emulator=kachikachi
+[ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" = "1000" ] && emulator=kachikachi
 # Hold down to forcely enable RetroArch
-[ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" == "2000" ] && emulator=retroarch
+[ -e "$clovercon_file" ] && [ "$(cat $clovercon_file)" = "2000" ] && emulator=retroarch
 
 echo using $emulator
 
-if [ "$emulator" == "kachikachi" ]; then
-# Seems like this game will work on default emulator
-exec kachikachi \
-  --fullscreen \
-  --sync-guest-with-host \
-  --fds-initial-disk-insert-on-keypress \
-  --fds-auto-disk-side-switch \
-  --fds-disable-host-guest-sync-on-disk-op \
-  --keep-aspect-ratio \
-  $args
+if [ "$emulator" = "kachikachi" ]; then
+  # Seems like this game will work on default emulator
+  exec kachikachi $options
 fi
 
-if [ "$emulator" == "retroarch" ]; then
+if [ "$emulator" = "retroarch" ]; then
 # Using RetroArch
-	[ -z "$core" ] && exec nes $filename $args
-	[ -z "$core" ] || exec retroarch-clover $core $filename $args
+	[ -z "$core" ] && exec nes "$filename" "$args"
+	[ -z "$core" ] || exec retroarch-clover "$core" "$filename" "$args"
 fi
